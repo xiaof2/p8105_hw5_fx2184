@@ -25,10 +25,11 @@ homicides_raw = read_csv(url)
 * some reported `unknown` under variable victim age, sex and race. 
 * the `lat` contains `r sum(is.na(homicides_raw$lat))` missing value, and `lon` contains `r sum(is.na(homicides_raw$lon))` missing value, 
 * the raw data contains 3 numeric variables: reported data. longitude and latitude, rest of the variables are designed as character variables. 
+* The data contains only one observation from `Tulsa` with state `OK`, which does not make sense. So I assume it's a typo, I will delete this row in the further cleaning step. 
 
 
 ```{r}
-#clean the raw data and create city_state varialbe 
+#clean the raw data and create city_state and resolved
 homicides = homicides_raw %>% 
   janitor::clean_names() %>% 
   mutate(city_state = str_c(city, state,sep = ", "),
@@ -39,7 +40,14 @@ homicides = homicides_raw %>%
          )) %>% 
   filter(city_state != "Tulsa, AL") %>% 
   relocate(uid, city_state)
-  
+```
+
+```{r}
+#summarize within cities to obtain the total number of homicides and the number of unsolved homicides
+total_homicides = homicides %>% 
+  group_by(city_state) %>% 
+  summarize(total_homocid = n(), unsolved = sum(resolved == "unsolved")) 
+total_homicides %>% knitr::kable(align='c',col.names = c("City/State","Total Number of Homicids","Number of Unsolved "))
 ```
 
 
