@@ -8,9 +8,17 @@ output: github_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
-library(purrr)
 library(janitor)
 library(readr)
 library(rvest)
 theme_set(theme_minimal() + theme(legend.position = "bottom"))
 ```
+
+# problem 2
+```{r, meassage = FALSE}
+# read the data from the web 
+url = "https://raw.githubusercontent.com/washingtonpost/data-homicides/master/homicide-data.csv"
+
+homicides_raw = read_csv(url)
+```
+* The raw dataset include `r nrow(homicides_raw)`observations of homicides reported criminal homicides over the past decade in 50 of the largest American cities, and `r ncol(homicides_raw)` key variables, they are `r homicides_raw %>% names`. 
