@@ -11,6 +11,7 @@ library(tidyverse)
 library(janitor)
 library(readr)
 library(rvest)
+library(purrr)
 theme_set(theme_minimal() + theme(legend.position = "bottom"))
 ```
 
@@ -56,7 +57,20 @@ total_homicides %>% knitr::kable(align='c',col.names = c("City/State","Total Num
 # For the city of Baltimore, MD,estimate the proportion of homicides that are unsolved
 prop_baltimore =  prop.test(total_homicides %>% filter(city_state == "Baltimore, MD") %>% pull(unsolved),
                             total_homicides %>% filter(city_state == "Baltimore, MD") %>% pull(total_homicide))
-broom::tidy(prop_baltimore)
+broom::tidy(prop_baltimore)[,c(1,5,6)] %>%  round(digit = 3)
 ```
 
+The estimate proportion of unsolved homicides in Baltimore, MD is `r prop_baltimore$estimate` with confidence interval 
+```{r}
+# Estimate proportion of homicides that are unsolved for each of the cities 
+# extract both the proportion of unsolved homicides and the confidence interval for each.
+prop_cities = 
+  total_homicides %>% 
+  mutate(prop_test = purrr::map2(.x = unsolved, .y = total_homicide, ~prop.test(x = .x, n = .y)),
+         tidy_test = purrr::map(.x = prop_test, ~broom::tidy(.x))) %>% 
+  unnest(tidy_test) %>% 
+  select(city_state, estimate, conf.low, conf.high)
+
+prop_cities%>% knitr::kable(align='c',col.names = c("City/State","Estimate","Confidence(lower)","Confidence(upper)"))
+```
 
