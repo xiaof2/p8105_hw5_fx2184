@@ -22,3 +22,26 @@ url = "https://raw.githubusercontent.com/washingtonpost/data-homicides/master/ho
 homicides_raw = read_csv(url)
 ```
 * The raw dataset include `r nrow(homicides_raw)`observations of homicides reported criminal homicides over the past decade in 50 of the largest American cities, and `r ncol(homicides_raw)` key variables, they are `r homicides_raw %>% names`. 
+* some reported `unknown` under variable victim age, sex and race. 
+* the `lat` contains `r sum(is.na(homicides_raw$lat))` missing value, and `lon` contains `r sum(is.na(homicides_raw$lon))` missing value, 
+* the raw data contains 3 numeric variables: reported data. longitude and latitude, rest of the variables are designed as character variables. 
+
+
+```{r}
+#clean the raw data and create city_state varialbe 
+homicides = homicides_raw %>% 
+  janitor::clean_names() %>% 
+  mutate(city_state = str_c(city, state,sep = ", "),
+         resolved = case_when(
+           disposition == "Closed by arrest" ~ "solved",
+           disposition ==  "Open/No arrest" ~ "unsolved",
+           disposition ==  "Closed without arrest" ~ "unsolved"
+         )) %>% 
+  filter(city_state != "Tulsa, AL") %>% 
+  relocate(uid, city_state)
+  
+```
+
+
+
+
