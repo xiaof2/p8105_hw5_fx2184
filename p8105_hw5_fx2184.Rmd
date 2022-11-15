@@ -15,7 +15,7 @@ library(purrr)
 theme_set(theme_minimal() + theme(legend.position = "bottom"))
 ```
 
-# problem 2
+# Problem 2
 ```{r, meassage = FALSE}
 # read the data from the web 
 url = "https://raw.githubusercontent.com/washingtonpost/data-homicides/master/homicide-data.csv"
@@ -28,9 +28,8 @@ homicides_raw = read_csv(url)
 * the raw data contains 3 numeric variables: reported data. longitude and latitude, rest of the variables are designed as character variables. 
 * The data contains only one observation from `Tulsa` with state `OK`, which does not make sense. So I assume it's a typo, I will delete this row in the further cleaning step. 
 
-
+## clean the raw data and create city_state and resolved
 ```{r}
-#clean the raw data and create city_state and resolved
 homicides = homicides_raw %>% 
   janitor::clean_names() %>% 
   mutate(city_state = str_c(city, state,sep = ", "),
@@ -72,5 +71,20 @@ prop_cities =
   select(city_state, estimate, conf.low, conf.high)
 
 prop_cities%>% knitr::kable(align='c',col.names = c("City/State","Estimate","Confidence(lower)","Confidence(upper)"))
+```
+
+## create a plot showing the estimates and CI
+
+```{r}
+
+prop_cities%>%
+  mutate(city_state = fct_reorder(city_state, estimate)) %>%
+  ggplot(aes(x = city_state, y = estimate)) +
+  geom_point() +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high)) +
+  labs(x = "City",
+       y = "Estimate",
+       title = "Estimates and Confidence Intervals of Porportion of Unsolved Homicides for Each City") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 ```
 
