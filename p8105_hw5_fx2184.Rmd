@@ -1,7 +1,6 @@
 ---
 title: "p8105_hw5_fx2184"
 author: "Fei"
-date: "2022-11-15"
 output: github_document
 ---
 
@@ -70,7 +69,7 @@ homicides_raw = read_csv(url)
 * the raw data contains 3 numeric variables: reported data. longitude and latitude, rest of the variables are designed as character variables. 
 * The data contains only one observation from `Tulsa` with state `OK`, which does not make sense. So I assume it's a typo, I will delete this row in the further cleaning step. 
 
-## clean the raw data and create city_state and resolved
+## Clean the raw data and create city_state and resolved
 ```{r}
 homicides = homicides_raw %>% 
   janitor::clean_names() %>% 
@@ -116,7 +115,7 @@ prop_cities =
 prop_cities%>% knitr::kable(align='c',col.names = c("City/State","Estimate","Confidence(lower)","Confidence(upper)"))
 ```
 
-## create a plot showing the estimates and CI
+## Create a plot showing the estimates and CI
 
 ```{r}
 prop_cities%>%
@@ -134,7 +133,7 @@ prop_cities%>%
 ```{r,warning=FALSE,message=FALSE}
 set.seed(1)
 ```
-## generate the function 
+## Generate the function 
 ```{r}
 ttest = function(n = 30, mu, sigma = 5) {
 
@@ -152,7 +151,7 @@ ttest = function(n = 30, mu, sigma = 5) {
 }
 ```
 
-## generate 5000 datasets from the model $X \sim Normal[\mu, \sigma]$ 
+## Generate 5000 datasets from the model $X \sim Normal[\mu, \sigma]$ 
 
 ```{r}
 set.seed(1)
@@ -166,7 +165,7 @@ sim_result = tibble(mu = c(0:6)) %>%
     unnest(estimate_df)
 ```
 
-
+##  Association between effect size and power.
 
 ```{r}
 #showing the proportion of times the null was rejected (the power of the test) on the y axis and the true value of μ
@@ -189,8 +188,11 @@ sim_result %>%
 
 ```
 
+* We could see a positive associate between the effect size and power of the test. 
+* With the increase of the different between true mean and effect size, the proportion of times the null was rejected shows an overall increase trend, and getting slow down when effect size becoming larger and the proportion getting close to 1. 
+
 ```{r}
-#Make a plot showing the average estimate of μ̂， on the y axis and the true value of μ，  on the x axis. 
+# Make a plot showing the average estimate of μ̂， on the y axis and the true value of μ，  on the x axis. 
 sim_result %>% 
   group_by(mu)%>% 
   summarize(average_mu = mean(mu_hat)) %>% 
@@ -206,6 +208,7 @@ sim_result %>%
     y = "Average Estimate of Mean"
   )
 ```
+
 ```{r}
 #Make a second plot showing the average estimate of μ_hat only in samples for which the null was rejected on the y axis and the true value of μ on the x axis
 sim_reject = sim_result %>% 
@@ -231,5 +234,9 @@ sim_result%>%
     y= "Average estimate of mean (reject null samples)"
   )
 ```
+* From the plot, we could see the sample average of $\hat{\mu}$ across tests for all samples is approximately equal to the true value of $\mu$.
+* for the sample average of $\hat{\mu}$ across data for which the null was rejected, it is difference between the true value of $\mu$ and average of $\hat{\mu}$ when $\mu=0,1,2,3$. and approximately equal to the true value of $\mu$ when $\mu=4,5,6$. 
+* As the sample size increase, the probability that the null hypothesis is rejected is increase as well.
+* As the true mean gets larger, the effect size becomes larger will leads to a higher probability of correctly rejecting the null hypothesis. When $\mu=4,5,6$, more samples are correctly rejected, the power is increasing as well. So we could observe that the average of $\hat{\mu}$ for rejected samples is approximately equal to the true value of $\mu$.
 
 
