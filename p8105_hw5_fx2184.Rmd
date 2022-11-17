@@ -110,7 +110,7 @@ ttest = function(n = 30, mu, sigma = 5) {
 }
 ```
 
-## generate 5000 datasets for t test from the model $X \sim Normal[\mu, \sigma]$ 
+## generate 5000 datasets from the model $X \sim Normal[\mu, \sigma]$ 
 
 ```{r}
 set.seed(1)
@@ -124,14 +124,70 @@ sim_result = tibble(mu = c(0:6)) %>%
     unnest(estimate_df)
 ```
 
+
+
 ```{r}
 #showing the proportion of times the null was rejected (the power of the test) on the y axis and the true value of μ
 #on the x axis. Describe the association between effect size and power.
 sim_result %>% 
   group_by(mu) %>% 
-  
+  summarize(rej_num = sum(p_value <0.05),
+            total = n(),
+            rej_prop = rej_num/total) %>% 
+  ggplot(aes(x=mu, y = rej_prop))+
+  geom_point(alpha = 0.5)+
+  geom_line()+
+  geom_text(aes(label = round(rej_prop,3)), vjust = -1, size = 3)+
+  labs(
+    title = "Association Between Effect Size and Power",
+    x = "True Mean", y = "Power of Test"
+  )+
+  scale_x_continuous(n.breaks = 6)+
+  scale_y_continuous(n.breaks = 10)
 
 ```
 
+```{r}
+#Make a plot showing the average estimate of μ̂， on the y axis and the true value of μ，  on the x axis. 
+sim_result %>% 
+  group_by(mu)%>% 
+  summarize(average_mu = mean(mu_hat)) %>% 
+  ggplot(aes(x = mu, y=average_mu))+
+  geom_point()+
+  geom_line()+
+  geom_text(aes(label = round(average_mu,3)),vjust = -1, size = 2)+
+  scale_x_continuous(breaks = 1:6)+ 
+  scale_y_continuous(breaks = 1:6)+
+  labs(
+    title = "Association Between True Mean and Average Estimate of Mean",
+    x = "True Mean",
+    y = "Average Estimate of Mean"
+  )
+```
+```{r}
+#Make a second plot showing the average estimate of μ_hat only in samples for which the null was rejected on the y axis and the true value of μ on the x axis
+sim_reject = sim_result %>% 
+  group_by(mu)%>% 
+  filter(p_value<0.05) %>%
+  summarize(average_mu = mean(mu_hat))
+
+sim_result%>% 
+  group_by(mu)%>%
+  summarize(average_mu = mean(mu_hat)) %>% 
+  ggplot(aes(x=mu, y= average_mu, color = "Total sample"))+
+  geom_point()+
+  geom_line()+
+  geom_text(aes(label = round(average_mu,3)),vjust = -1)+
+  geom_point(data = sim_reject, aes(x= mu, y = average_mu, color = "Rejected samples"))+
+  geom_line(data = sim_reject, aes(x= mu, y= average_mu, color = "Rejected samples"))+
+  geom_text(data = sim_reject, aes(label = round(average_mu, 3), color = "Rejected samples"), vjust = -1)+
+  scale_x_continuous(breaks = 1:6) +
+  scale_y_continuous(breaks = 1:6) +
+  labs(
+    title = "Association between ture mean and average estimates",
+    x= "True Mean",
+    y= "Average estimate of mean (reject null samples)"
+  )
+```
 
 
